@@ -1,5 +1,8 @@
 @extends('layout')
 
 @section('content')
-    Home!
+    <p>from the db : </p>
+    @foreach($users as $user)
+        <p>{{ $user->name }}</p>
+    @endforeach
 @stop

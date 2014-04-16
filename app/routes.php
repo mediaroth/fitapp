@@ -11,4 +11,6 @@
 |
 */
 
-Route::get('/', 'HomeController@showWelcome');
+Route::get('/', 'HomeController@index');
+Route::get('workout', 'WorkoutController@index');
+Route::resource('exercise', 'ExerciseController');

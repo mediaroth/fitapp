@@ -15,10 +15,10 @@ class HomeController extends BaseController {
 	|
 	*/
 
-	public function showWelcome()
+	public function index()
 	{
 		$users = user::all();
-		return View::make('home')->with('users',$users);
+		return View::make('home.index')->with('data',array('page'=>'home','users'=>$users));
 	}
 
 }

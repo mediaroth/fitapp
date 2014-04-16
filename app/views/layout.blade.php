@@ -11,10 +11,10 @@
     <title>Starter Template for Bootstrap</title>
   
     <!-- Bootstrap core CSS -->
-     <link href="packages/bootstrap-3.1.1-dist/css/bootstrap.min.css" rel="stylesheet">
+     <link href="/packages/bootstrap-3.1.1-dist/css/bootstrap-theme.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="css/style.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
 
     <!-- Just for debugging purposes. Don't actually copy this line! -->
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
@@ -27,7 +27,6 @@
   </head>
 
   <body>
-
     <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
       <div class="container">
         <div class="navbar-header">
@@ -37,13 +36,13 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">Project name</a>
+          <a class="navbar-brand" href="/">Fitblaster</a>
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class="active"><a href="#">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
+            <li class="<?php echo $data['page'] == "home" ? "active" : null ?>"><a href="/">Home</a></li>
+            <li class="<?php echo $data['page'] == "workout" ? "active" : null ?>"><a href="/workout">Workouts</a></li>
+            <li class="<?php echo $data['page'] == "exercise" ? "active" : null ?>"><a href="/exercise">Exercises</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -51,10 +50,10 @@
 
     <div class="container">
 
-      <div class="starter-template">
-        <h1>Bootstrap starter template</h1>
-        <p class="lead">Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.</p>
-        @yield('content')
+      <div class="row">
+        <div class="main-row col-md-12">
+          @yield('content')
+        </div>
       </div>
 
     </div><!-- /.container -->
@@ -66,6 +65,6 @@
    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="packages/bootstrap-3.1.1-dist/js/bootstrap.min.js"></script>
+    <script src="/packages/bootstrap-3.1.1-dist/js/bootstrap.min.js"></script>
   </body>
 </html>

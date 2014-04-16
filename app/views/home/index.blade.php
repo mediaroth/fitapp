@@ -2,7 +2,7 @@
 
 @section('content')
     <p>from the db : </p>
-    @foreach($users as $user)
+    @foreach($data['users'] as $user)
         <p>{{ $user->name }}</p>
     @endforeach
 @stop

@@ -1,0 +1,15 @@
+<div>
+  Filter: <input type="text" class="form-control input-sm" ng-model="search.name">
+<table class="table table-condensed" >
+  <th>#</th><th>Name</th><th>Description</th><th>Action</th>
+  <tr ng-repeat="object in objects | filter : search">
+    <td>{{ object.id }}</td>
+    <td>{{ object.name }}</td>
+    <td>{{ object.description }}</td>
+    <td>
+      <button ng-click="edit(object.id)" class="btn btn-primary btn-sm">Edit</button>
+      <button ng-click="destroy(object.id)" class="btn btn-danger btn-sm">Delete</button>
+    </td>
+  </tr>
+</table>
+</div>

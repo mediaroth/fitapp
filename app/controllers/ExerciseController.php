@@ -4,22 +4,22 @@ class ExerciseController extends BaseController {
 
   public function __construct() {
     $this->exercise = null;
-    $this->exercises = exercise::all();
+    $this->exercises = Exercise::all();
   }
 
 	public function index()
 	{
-    return View::make('exercise/index')->with('data',array('page'=>'exercise','exercises'=>$this->exercises));
+    return Response::json(Exercise::all());
 	}
+  public function show($id)
+  {
+    return Response::json(Exercise::find($id));
+  }
   public function destroy($id)
   {
     // delete
-    $exercise = Exercise::find($id);
-    $exercise->delete();
-
-    // redirect
-    Session::flash('message', 'Successfully deleted the exercise!');
-    return Redirect::to('exercise');
+    Exercise::destroy($id);
+    return Response::json(array('success' => true));
   }
   public function update($id)
   {
@@ -32,19 +32,14 @@ class ExerciseController extends BaseController {
 
     // process the login
     if ($validator->fails()) {
-      return Redirect::to('exercise/'.$id.'/edit')
-        ->withErrors($validator)
-        ->withInput();
+      return Response::json(array('success'=>false));
     } else {
       // store
       $exercise = Exercise::find($id);
       $exercise->name = Input::get('name');
       $exercise->description = Input::get('description');
       $exercise->save();
-
-      // redirect
-      Session::flash('message', 'Successfully updated exercise!');
-      return Redirect::to('exercise/'.$id.'/edit');
+      return Response::json(array('success'=>true));
     }
     // return View::make('exercise/index')->with('data',array('page'=>'exercise'));
   }
@@ -57,28 +52,17 @@ class ExerciseController extends BaseController {
     );
     $validator = Validator::make(Input::all(), $rules);
 
-    // process the login
     if ($validator->fails()) {
-      return Redirect::to('exercise')
-        ->withErrors($validator)
-        ->withInput();
+      return Response::json(array('sucess'=>false));
     } else {
       // store
-      $exercise = new Exercise;
-      $exercise->name = Input::get('name');
-      $exercise->description = Input::get('description');
-      $exercise->save();
-
-      // redirect
-      Session::flash('message', 'Successfully created exercise!');
-      return Redirect::to('exercise');
+      Exercise::create(array(
+        'name' => Input::get('name'),
+        'description' => Input::get('description')
+      ));
+      return Response::json(array('sucess'=>true));
     }
     // return View::make('exercise/index')->with('data',array('page'=>'exercise'));
-  }
-  public function edit($id)
-  {
-    $this->exercise = exercise::find($id);
-    return View::make('exercise/index')->with('data',array('page'=>'exercise','exercises'=>$this->exercises,'exercise'=>$this->exercise));
   }
 
 }

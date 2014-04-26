@@ -33,6 +33,9 @@ Route::group(array('prefix' => 'api'), function() {
     array('only' => array('index','show', 'store', 'update','destroy')));
   Route::resource('workouts', 'WorkoutController', 
     array('only' => array('index','show', 'store', 'update','destroy')));
+  Route::post('users/login', 'UserController@login');
+  Route::resource('users', 'UserController', 
+    array('only' => array('index','show', 'store', 'update','destroy')));
 
 });
 // =============================================
@@ -42,6 +45,6 @@ Route::group(array('prefix' => 'api'), function() {
 // this allows angular to route them
 App::missing(function($exception)
 {
-  return Response::view('index', array(), 404);
+  return Response::view('index', array(), 200);
   // return View::make('index');
 });

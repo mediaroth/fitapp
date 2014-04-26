@@ -32,7 +32,7 @@ class WorkoutController extends BaseController {
 
     // process the login
     if ($validator->fails()) {
-      return Response::json(array('success'=>false));
+      return Response::json(array('error'=>true,'errors'=>$validator->errors()->all()),400);
     } else {
       // store
       $workout = Workout::find($id);

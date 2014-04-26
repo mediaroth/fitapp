@@ -32,7 +32,7 @@ class ExerciseController extends BaseController {
 
     // process the login
     if ($validator->fails()) {
-      return Response::json(array('success'=>false));
+      return Response::json(array('error'=>true,'errors'=>$validator->errors()->all()),400);
     } else {
       // store
       $exercise = Exercise::find($id);
@@ -53,7 +53,7 @@ class ExerciseController extends BaseController {
     $validator = Validator::make(Input::all(), $rules);
 
     if ($validator->fails()) {
-      return Response::json(array('sucess'=>false));
+      return Response::json(array('error'=>true,'errors'=>$validator->errors()->all()),400);
     } else {
       // store
       Exercise::create(array(

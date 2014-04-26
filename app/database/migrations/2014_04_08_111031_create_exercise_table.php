@@ -28,7 +28,7 @@ class CreateExerciseTable extends Migration {
 	 */
 	public function down()
 	{
-		//
+		Schema::drop('exercises');
 	}
 
 }

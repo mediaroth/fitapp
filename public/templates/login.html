@@ -1,0 +1,51 @@
+<div class="col-md-12" >
+  <!-- PAGE TITLE =============================================== -->
+  <div class="page-header">
+    <h2>Login</h2>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+          <div class="alert alert-danger" ng-show="error">
+            There were errors saving the form:
+            <ul ng-repeat="error in errors">
+              <li>{{error}}</li>
+            </ul>
+          </div>
+          <form class="{{submitted ? 'submitted' : ''}}" name="login_form" novalidate ng-submit="login()"> 
+            <!-- TEXT FORM ELEMENT -->
+            <div class="form-group">
+              <input type="text" class="form-control" required name="email" ng-focus ng-model="user.email" placeholder="Email Address">
+              <div class="has-error has-feedback" ng-show="login_form.email.$invalid && (submitted || (login_form.email.$dirty && !login_form.email.$focused))">
+                <span class="glyphicon glyphicon-remove form-control-feedback"></span>
+                <div class="alert alert-danger">
+                  <div ng-show="login_form.email.$error.required">
+                    The email is required
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- END TEXT FORM ELEMENT -->
+            <!-- PASSWORD FORM ELEMENT -->
+            <div class="form-group">
+              <input type="password" class="form-control" required name="password" ng-focus ng-model="user.password" placeholder="Password">
+              <div class="has-error has-feedback" ng-show="login_form.password.$invalid && (submitted || (login_form.password.$dirty && !login_form.password.$focused))">
+                <span class="glyphicon glyphicon-remove form-control-feedback"></span>
+                <div class="alert alert-danger">
+                  <div ng-show="login_form.password.$error.required">
+                    The password is required
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- END TEXT FORM ELEMENT -->
+            <!-- SUBMIT BUTTON -->
+            <div class="form-group text-right"> 
+              <button type="submit" class="btn btn-primary btn-lg">Login</button>
+              <button type="button" ng-click="clear()" class="btn btn-lg">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>

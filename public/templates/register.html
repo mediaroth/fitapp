@@ -1,0 +1,71 @@
+<div class="col-md-12" >
+  <!-- PAGE TITLE =============================================== -->
+  <div class="page-header">
+    <h2>Register</h2>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+          <form class="{{submitted ? 'submitted' : ''}}" name="register_form" novalidate ng-submit="register()"> 
+            <!-- TEXT FORM ELEMENT -->
+            <div class="form-group">
+              <input type="text" class="form-control" required name="name" ng-focus ng-model="user.name" placeholder="Name">
+              <div class="has-error has-feedback" ng-show="register_form.name.$invalid && (submitted || (register_form.name.$dirty && !register_form.name.$focused))">
+                <span class="glyphicon glyphicon-remove form-control-feedback"></span>
+                <div class="alert alert-danger">
+                  <div ng-show="register_form.name.$error.required">
+                    The name is required
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- END TEXT FORM ELEMENT -->
+            <!-- TEXT FORM ELEMENT -->
+            <div class="form-group">
+              <input type="text" class="form-control" required name="email" ng-focus ng-model="user.email" placeholder="Email Address">
+              <div class="has-error has-feedback" ng-show="register_form.email.$invalid && (submitted || (register_form.email.$dirty && !register_form.email.$focused))">
+                <span class="glyphicon glyphicon-remove form-control-feedback"></span>
+                <div class="alert alert-danger">
+                  <div ng-show="register_form.email.$error.required">
+                    The email is required
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- END TEXT FORM ELEMENT -->
+            <!-- PASSWORD FORM ELEMENT -->
+            <div class="form-group">
+              <input type="password" class="form-control" required name="password" ng-focus ng-model="user.password" placeholder="Password">
+              <div class="has-error has-feedback" ng-show="register_form.password.$invalid && (submitted || (register_form.password.$dirty && !register_form.password.$focused))">
+                <span class="glyphicon glyphicon-remove form-control-feedback"></span>
+                <div class="alert alert-danger">
+                  <div ng-show="register_form.password.$error.required">
+                    The password is required
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- END TEXT FORM ELEMENT -->
+            <!-- PASSWORD FORM ELEMENT -->
+            <div class="form-group">
+              <input type="password" class="form-control" required name="password_confirmation" ng-focus ng-model="user.password_confirmation" placeholder="Password Confirmation">
+              <div class="has-error has-feedback" ng-show="register_form.password_confirmation.$invalid && (submitted || (register_form.password_confirmation.$dirty && !register_form.password_confirmation.$focused))">
+                <span class="glyphicon glyphicon-remove form-control-feedback"></span>
+                <div class="alert alert-danger">
+                  <div ng-show="register_form.password_confirmation.$error.required">
+                    The password Confirmation is required
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- END TEXT FORM ELEMENT -->
+            <!-- SUBMIT BUTTON -->
+            <div class="form-group text-right"> 
+              <button type="submit" class="btn btn-primary btn-lg">Register</button>
+              <button type="button" ng-click="clear()" class="btn btn-lg">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>

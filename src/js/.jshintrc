@@ -1,0 +1,14 @@
+{
+  "asi" : true,
+  "boss" : false,
+  "browser" : true,
+  "debug" : false,
+  "devel" : true,
+  "eqeqeq" : false,
+  "eqnull" : true,
+  "expr" : false,
+  "laxbreak" : false,
+  "unused" : false,
+  "validthis": true,
+  "multistr":true
+}

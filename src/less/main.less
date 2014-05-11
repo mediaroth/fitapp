@@ -1,0 +1,134 @@
+.primary-color {
+    color: @brand-primary;
+}
+.primary-danger {
+    color: @brand-danger;
+}
+body {
+    background: url("../img/bg_light.png") repeat scroll 0 0 #FFFFFF;
+}
+.table {
+    margin-bottom:0;
+}
+.loading {
+  background-image: url("/img/ajax-loader.gif");
+  background-repeat: no-repeat;
+  display: block;
+  height: 50px;
+  width: 100%;
+}
+.inner {
+  background-color:#222;
+}
+.page {
+padding: 15px;
+}
+.list-unstyled, .list-inline {
+padding-left: 0;
+list-style: none;
+}
+.no-margin {
+    margin: 0;
+}
+.no-border {
+    border: 0;
+}
+
+// background
+.bg-teal {
+    background-color: @color-green;
+    color: @reverse;
+}
+.bg-blue {
+    background-color: @color-blue;
+    color: @reverse;
+}
+.bg-purple {
+    background-color: @color-purple;
+    color: @reverse;
+}
+.bg-dark-purple {
+    background-color: @color-dark-purple;
+    color: @reverse;
+}
+.bg-red {
+    background-color: @color-red;
+    color: @reverse;
+}
+.bg-orange {
+    background-color: @color-orange;
+    color: @reverse;
+}
+.bg-green {
+    background-color: @color-green;
+    color: @reverse;
+}
+.bg-sky-blue {
+    background-color: @color-sky-blue;
+    color: @reverse;    
+}
+
+.page-signin,
+.page-signup {
+
+    // 
+    .signin-header {
+        padding: 25px 0;
+        background-color: #dfe0e6;
+    }
+
+    .logo {
+        font-size: 46px;
+        font-weight: bold;
+        a {
+            &:hover {
+                text-decoration: none;
+            }
+        }
+    }
+
+    // 
+    .signin-body,
+    .signup-body {
+        border-top: 1px solid lighten(@body-bg, 2%);
+        padding: 20px 10px;
+    }
+
+    .form-container {
+        max-width: 420px;
+        margin: 10px auto;
+    }
+
+    // Line through
+    .line-thru {
+        margin: 1em 0;
+        display: block;
+        font-size: .875em;
+        font-weight: bold;
+        margin-bottom: 1em;
+        position: relative;
+        text-align: center;
+        width: 100%;
+        z-index: 1;
+        &:before {
+            width: 50px;
+            height: 10px;
+            background-color: @body-bg; 
+            content: '';
+            margin: -5px 0 0 -20px;
+            left: 50%;
+            position: absolute;
+            top: 50%;
+            z-index: -1;
+        }
+        &:after {
+            width: 100%;
+            border-bottom: 1px solid darken(@body-bg, 10%);
+            content: '';
+            display: block;
+            position: absolute;
+            top: 49%;
+            z-index: -2;
+        }
+    }
+}

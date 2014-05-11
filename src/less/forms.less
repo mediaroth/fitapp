@@ -1,0 +1,102 @@
+#login,#register {
+  .has-feedback {
+    position: static;
+
+    .form-control-feedback {
+        top:6px;
+        right:2px;
+        z-index: 10;
+      }
+    
+    .alert {
+      margin-bottom: 0px;
+      
+      > div {
+        margin-top: 40px;
+      }
+    }
+  }
+  .form-group {
+    position: relative;
+
+    .form-control {
+      font-size: 14px;
+    }
+  }
+}
+#register {
+  .has-feedback {
+    position: static;
+
+    .form-control-feedback {
+        top:1px;
+        right:2px;
+        z-index: 10;
+      }
+    
+    .alert {
+      margin-bottom: 0px;
+      
+      > div {
+        margin-top: 0px;
+      }
+    }
+  }
+  .form-group {
+    position: relative;
+
+    .form-control {
+      font-size: 14px;
+    }
+  }
+}
+.submitted {
+  input.ng-invalid,
+  textarea.ng-invalid {
+    border: 1px solid red;
+  }
+  .form-control.ng-invalid {
+    &:focus {
+      border-color: #c10000;
+      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(241, 0, 0, 0.6);
+      outline: 0 none;
+    }
+  }
+}
+.search-bar {
+ .input-icon {
+    display: inline-block;
+    position: relative;
+    margin-bottom: 10px;
+
+    > input {
+      padding-left: 28px;
+      padding-right: 6px;
+    }
+    i {
+      color: @brand-primary;
+      display: inline-block;
+      font-size: 16px;
+      left: 5px;
+      line-height: 28px;
+      padding: 0 3px;
+      position: absolute;
+      top: 3px;
+      z-index: 2;
+    }
+  }
+  .legend {
+    display: inline-block;
+    margin-top: 7px;
+    vertical-align: top;
+    margin-left: 10px;
+  }
+}
+.bottom-bar {
+ .num-per-page {
+   margin:20px 0;
+ }
+}
+.btn-del {
+  margin-top:5px;
+}

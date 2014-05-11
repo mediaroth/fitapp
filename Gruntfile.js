@@ -4,7 +4,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     banner: '/*!\n' +
-            ' * <%= pkg.name %> v<%= pkg.version %> (<%= pkg.homepage %>)\n' +
+            ' * <%= pkg.name %> v<%= pkg.version %> (<%= pkg.repository %>)\n' +
             ' * Copyright 2011-<%= grunt.template.today("yyyy") %> <%= pkg.author %>\n' +
             ' * Licensed under <%= pkg.license.type %>\n' +
             ' */\n',
@@ -43,7 +43,7 @@ module.exports = function(grunt) {
       },
       dist: {
         // the files to concatenate
-        src: ['<%= pkg.src.js %>/**/*.js'],
+        src: ['<%= pkg.paths.src.js %>/**/*.js'],
         // the location of the resulting JS file
         dest: '<%= pkg.paths.build.js %>/<%= pkg.name %>.js'
       }
@@ -56,7 +56,7 @@ module.exports = function(grunt) {
           outputSourceFiles: true
         },
         files: {
-          '<%= pkg.paths.build.css %>/<%= pkg.name %>.css': '<%= pkg.paths.src.css %>/style.less'
+          '<%= pkg.paths.build.css %>/<%= pkg.name %>.css': '<%= pkg.paths.src.css %>/styles.less'
         }
       },
       minify: {
@@ -107,13 +107,31 @@ module.exports = function(grunt) {
     copy: {
       lib: {
         files : [
-          {expand: true,flatten: true,src:['assets/angular/angular.min.js'],dest:'public/lib/',filter:'isFile'},
-          {expand: true,flatten: true,src:['assets/angular-route/angular-route.min.js'],dest:'public/lib/',filter:'isFile'},
-          {expand: true,flatten: true,src:['assets/angular-cookies/angular-cookies.min.js'],dest:'public/lib/',filter:'isFile'},
-          {expand: true,flatten: true,src:['assets/jquery/dist/jquery.min.js'],dest:'public/lib/',filter:'isFile'},
-          {expand: true,flatten: true,src:['assets/lodash/dist/lodash.compat.min.js'],dest:'public/lib/',filter:'isFile'},
-          {expand: true,flatten: true,src:['assets/restangular/dist/restangular.min.js'],dest:'public/lib/',filter:'isFile'},
+          // {expand: true,flatten: true,src:['bower_components/angular/*'],dest:'public/lib/',filter:'isFile'},
+          // {expand: true,flatten: true,src:['bower_components/angular-route/*'],dest:'public/lib/',filter:'isFile'},
+          // {expand: true,flatten: true,src:['bower_components/angular-cookies/*'],dest:'public/lib/',filter:'isFile'},
+          // {expand: true,flatten: true,src:['bower_components/jquery/dist/*'],dest:'public/lib/',filter:'isFile'},
+          // {expand: true,flatten: true,src:['bower_components/lodash/dist/*'],dest:'public/lib/',filter:'isFile'},
+          // {expand: true,flatten: true,src:['bower_components/restangular/*'],dest:'public/lib/',filter:'isFile'},
         ]
+      }
+    },
+    bowerInstall: {
+      target: {
+
+        // needs manual edit for the correct public/ path in index.php
+        src: [
+          'public/views/index.php',   // .html support...
+        ],
+
+        // Optional:
+        // ---------
+        cwd: '',
+        dependencies: true,
+        devDependencies: false,
+        exclude: [],
+        fileTypes: {},
+        ignorePath: ''
       }
     },
     watch: {
@@ -121,20 +139,20 @@ module.exports = function(grunt) {
         files: '<%= jshint.src.src %>',
         tasks: ['jshint:src', 'jscs:src', 'concat', 'uglify'],
         options: {
-          livereload: true
+          // livereload: true
         }
       },
       bootstrap: {
-        files: 'public/assets/bootstrap/less/*.less',
+        files: ['<%= pkg.paths.src.css %>/**/*.less'],
         tasks: 'less',
         options: {
-          livereload: true
+          // livereload: true
         }
       },
       main: {
-        files: 'public/index.html',
+        files: ['public/**/*.html','public/**/*.php','backend/app/**/*.*'],
         options: {
-          livereload: true
+          // livereload: true
         }
       }
     }
@@ -151,6 +169,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-csscomb');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-bower-install');
 
   // Default task(s).
   grunt.registerTask('make-jshint', ['jshint']);

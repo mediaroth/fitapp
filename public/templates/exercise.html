@@ -1,68 +1,115 @@
-<div class="col-md-12" >
-  <!-- PAGE TITLE =============================================== -->
-  <div class="page-header">
-    <h2>Exercises</h2>
-    <h4>Handle the exercises</h4>
-  </div>
-  <div class="container">
-    <div class="row">
-      <div class="col-md-6">
-        <div class="alert alert-success" ng-show="success">
-          Successfully stored.
+<div class="page page-table" data-ng-controller="ExerciseController">
+    <section class="panel panel-primary table-dynamic">
+        <div class="panel-heading">
+            <strong><span class="glyphicon glyphicon-th"></span>Exercises
+            <div class="panel-toolbar">
+                <a data-action="collapse" ng-click="form.isCollapsed = !form.isCollapsed" href="#">
+                    <i class="fa {{ form.isCollapsed && 'fa-chevron-down' || 'fa-chevron-up' }}"></i>
+                </a>
+            </div>
         </div>
-        <div class="alert alert-danger" ng-show="error">
-          There were errors saving the form:
-          <ul ng-repeat="error in errors">
-            <li>{{error}}</li>
-          </ul>
-        </div>
-        <!-- NEW exercise FORM =============================================== -->
-        <form style="margin-top:50px;" class="{{submitted ? 'submitted' : ''}}" name="exercise_form" novalidate ng-submit="submit()"> <!-- ng-submit will disable the default form action and use our function -->
-          <!-- FORM TEXT ELEMENT -->
-          <div class="form-group">
-            <input type="text" class="form-control" required name="name" ng-focus ng-minlength=3 ng-model="exerciseData.name" placeholder="Exercise Name">
-            <div class="has-error has-feedback" ng-show="exercise_form.name.$invalid && (submitted || (exercise_form.name.$dirty && !exercise_form.name.$focused))">
-              <span class="glyphicon glyphicon-remove form-control-feedback"></span>
-              <div class="alert alert-danger">
-                <div ng-show="exercise_form.name.$error.required">
-                  The name is required
-                </div>
-                <div ng-show="exercise_form.name.$error.minlength">
-                  A length of 3 characters is minimum.
+        <div class="panel-content clearfix " collapse="form.isCollapsed">
+          <div class="alert alert-success" ng-show="model.form.success">Successfully stored.</div>
+          <div class="alert alert-danger" ng-show="model.form.error">There were errors saving the form:
+            <ul ng-repeat="error in errors">
+              <li>{{model.form.error}}</li>
+            </ul>
+          </div>
+          <!-- NEW exercise FORM =============================================== -->
+          <form class="{{model.form.submitted ? 'submitted' : ''}}" name="model.form" novalidate ng-submit="submit()"> <!-- ng-submit will disable the default form action and use our function -->
+            <!-- FORM TEXT ELEMENT -->
+            <div class="form-group">
+              <input type="text" class="form-control" required name="name" ng-focus ng-minlength=3 ng-model="model.record.name" placeholder="Exercise Name">
+              <div class="has-error has-feedback" ng-show="model.form.name.$invalid && (model.form.submitted || (model.form.name.$dirty && !model.form.name.$focused))">
+                <span class="glyphicon glyphicon-remove form-control-feedback"></span>
+                <div class="alert alert-danger">
+                  <div ng-show="model.form.name.$error.required">
+                    The name is required
+                  </div>
+                  <div ng-show="model.form.name.$error.minlength">
+                    A length of 3 characters is minimum.
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <!-- exercise TEXT -->
-          <div class="form-group">
-            <textarea class="form-control" required ng-focus name="description" ng-model="exerciseData.description" placeholder="Description"></textarea>
-            <div class="has-error has-feedback" ng-show="exercise_form.description.$invalid && (submitted || (exercise_form.description.$dirty && !exercise_form.description.$focused))">
-              <span class="glyphicon glyphicon-remove form-control-feedback"></span>
-              <div class="alert alert-danger">
-                <div ng-show="exercise_form.description.$error.required">
-                  The description is required
+            <!-- exercise TEXT -->
+            <div class="form-group">
+              <textarea class="form-control" required ng-focus name="description" ng-model="model.record.description" placeholder="Description"></textarea>
+              <div class="has-error has-feedback" ng-show="model.form.description.$invalid && (model.form.submitted || (model.form.description.$dirty && !model.form.description.$focused))">
+                <span class="glyphicon glyphicon-remove form-control-feedback"></span>
+                <div class="alert alert-danger">
+                  <div ng-show="model.form.description.$error.required">
+                    The description is required
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <!-- SUBMIT BUTTON -->
-          <div class="form-group text-right"> 
-            <button type="submit" class="btn btn-primary btn-lg"><span ng-show="!exerciseData.id">Create</span><span ng-show="exerciseData.id">Update</span></button>
-            <button type="button" ng-click="clear()" class="btn btn-lg">Cancel</button>
-          </div>
-          <input type="hidden" name="id" ng-model="exerciseData.id">
-        </form>
-      </div>
-    <div class="col-md-6">
-      <h4>List of Exercises</h4>
-      <!-- LOADING ICON =============================================== -->
-      <!-- show loading icon if the loading variable is set to true -->
-      <p class="text-center" ng-show="loading"><span class="loading"></span></p>
-      <!-- only show when loading = false -->
-      <div ng-show="!loading">
-        <div table-list objects="exercises" edit-fn="edit" destroy-fn="destroy"></div>
-      </div>
-      <!-- <div my-directive ng-model="workoutData.id"></div> -->
-    </div>
-  </div>
+            <!-- SUBMIT BUTTON -->
+            <div class="form-group text-right"> 
+              <button type="submit" class="btn btn-primary btn-lg"><span ng-show="!model.record.id">Create</span><span ng-show="model.record.id">Update</span></button>
+              <button type="button" ng-click="clear()" class="btn btn-lg">Cancel</button>
+            </div>
+            <input type="hidden" name="id" ng-model="model.record.id">
+          </form>
+        </div>
+    </section>
+    <section class="panel panel-primary table-dynamic">
+        <div class="panel-heading">
+            <strong><span class="glyphicon glyphicon-th"></span> Bordered table</strong>
+            <div class="panel-toolbar">
+                <a data-action="collapse" ng-click="table.isCollapsed = !table.isCollapsed" href="#">
+                    <i class="fa {{ table.isCollapsed && 'fa-chevron-down' || 'fa-chevron-up' }}"></i>
+                </a>
+            </div>
+        </div>
+        <div class="panel-content clearfix " collapse="table.isCollapsed">
+            <div class="search-bar">
+                <span class="input-icon">
+                    <input type="text" class="form-control" ng-model="model.table.searchKeyword" ng-change="model.table.onUpdate()">
+                    <i class="fa fa-search"></i>
+                </span>
+                <span class="legend">Showing {{model.table.currentPageData.length}} of {{model.table.totalPageData.length}} items</span>
+            </div>
+            <table class="table table-bordered table-hover table-striped table-responsive">
+                <thead>
+                    <tr>
+                        <th><div class="th">
+                            #
+                            <span class="up" ng-class="{active : model.table.currentSortedField == '-id'}" ng-click="model.table.onSort('-id')"><i class="fa fa-sort-asc"></i></span>
+                            <span class="down" ng-class="{active : model.table.currentSortedField == '+id'}" ng-click="model.table.onSort('+id')"><i class="fa fa-sort-desc"></i></span>
+                        </div></th>
+                        <th><div class="th">Name</div></th>
+                        <th><div class="th">Description</div></th>
+                        <th><div class="th"></div></th>
+                      </tr>
+                </thead>
+                <tbody>
+                    <tr data-ng-repeat="item in model.table.currentPageData | filter : search">
+                        <td>{{item.id}}</td>
+                        <td>{{item.name}}</td>
+                        <td>{{item.description}}</td>
+                        <td>
+                          <button ng-click="edit(item.id)" class="btn btn-primary btn-sm">Edit</button>
+                          <button data-mr-msg-box data-title="<i class='fa fa-times primary-danger'></i> <span class='primary-danger'>Really delete ?</span>" data-body="The data will be lost forever" data-confirm="destroy(item.id)" class="btn btn-danger btn-sm">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="bottom-bar clearfix">
+                <div class="num-per-page pull-left">
+                    Show <select name="" ng-change="model.table.onUpdate()" ng-options="num for num in model.table.maxNumPerPage" ng-model="model.table.numPerPage" id=""></select> items per page
+                </div>
+                <div class="text-right pagination-container pull-right">
+                    <pagination class="pagination-sm"
+                        ng-model="model.table.currentPage"
+                        total-items="model.table.totalPageData.length"
+                        items-per-page="model.table.numPerPage"
+                        max-size="4"
+                        ng-change="model.table.select(page)"
+                        rotate="false"
+                        boundary-links="true"></pagination>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>

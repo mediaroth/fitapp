@@ -1,50 +1,59 @@
 
 angular.module('fitApp.controllers').
-controller('ExerciseController', ['$scope','exerciseService',function($scope,exerciseService) {
-    $scope.exerciseData = {};
-    $scope.exercises = [];
-    $scope.loading = false;
-    $scope.submitted = false;
-    $scope.errors = [];
-    $scope.success = false;
-
-    $scope.exercises = exerciseService.getAll().$object;
+controller('ExerciseController', ['$scope','exerciseService','$location','$filter',function($scope,exerciseService,$location,$filter) {
+    $scope.model = {};
+    $scope.model.loading = false;
+    $scope.model.form = {};
+    $scope.model.form.submitted = false;
+    $scope.model.form.errors = [];
+    $scope.model.form.success = false;
+    $scope.model.record = {};
+    $scope.model.list = [];
+    $scope.model.table = {};
+    $scope.model.table.maxNumPerPage = [3, 5, 10, 20];
+    $scope.model.table.currentSortedField = '';
+    $scope.model.table.searchKeyword = '';
+    $scope.model.table.currentPage = 1;
+    $scope.model.table.currentPageData = [];
+    $scope.model.table.totalPageData = [];
 
     $scope.submit = function() {
-        $scope.error = false;
-        $scope.success = false;
-        if (!$scope.exercise_form.$valid) {
-            $scope.submitted = true;
+        $scope.model.form.error = false;
+        $scope.model.form.success = false;
+        if (!$scope.model.form.$valid) {
+            $scope.model.form.submitted = true;
         } else {
-            $scope.submitted = false;
-            // $scope.success = false;
-            $scope.error = false;
-            $scope.loading = true;
+            $scope.model.form.submitted = false;
+            // $scope.model.form.success = false;
+            $scope.model.form.error = false;
+            $scope.model.form.loading = true;
             //PUT
-            if ($scope.exerciseData.id) {
-                exerciseService.put($scope.exerciseData).then(function(data) {
-                    $scope.success = data.success;
+            if (!_.isUndefined($scope.model.record.id)) {
+                exerciseService.put($scope.model.record).then(function(data) {
+                    $scope.model.form.success = data.success;
                     return exerciseService.getAll();
                }).then(function(data) {
-                    $scope.exercises = data;
-                    $scope.loading = false;
+                    $scope.model.list = data;
+                    $scope.model.loading = false;
+                    $scope.model.table.onUpdate();
                 }, function(err) {
                     console.log(err);
                 });
             } else { // CREATE
-                exerciseService.post($scope.exerciseData).then(function(data) {
-                    console.log(data);
-                    $scope.success = data.success;
+                exerciseService.post($scope.model.record).then(function(data) {
+                    $scope.model.form.success = data.success;
+                                        console.log($scope.model.form.success);
                     return exerciseService.getAll();
                 }, function(err) {
-                    $scope.error = err.data.error;
-                    $scope.errors = err.data.errors;
+                    $scope.model.form.error = err.data.error;
+                    $scope.model.form.errors = err.data.errors;
                     return exerciseService.getAll();
                 }).finally(function() {
                     // how to implement ?
                 }).then(function(data) {
-                    $scope.exercises = data;
-                    $scope.loading = false;
+                    $scope.model.list = data;
+                    $scope.model.loading = false;
+                    $scope.model.table.onUpdate();
                 }, function(err) {
                     console.log(err);
                 });
@@ -53,38 +62,74 @@ controller('ExerciseController', ['$scope','exerciseService',function($scope,exe
 
     };
     $scope.destroy = function(id) {
-        $scope.loading = true;
+        $scope.model.loading = true;
         exerciseService.destroy(id).then(function() {
-            console.log('deleted ' + id);
             return exerciseService.getAll();
         },function(err) {
             console.log(err);
         }).then(function(data) {
             console.log('updated list');
-            $scope.exercises = data;
-            $scope.loading = false;
+            $scope.model.list = data;
+            $scope.model.loading = false;
+            $scope.model.table.onUpdate();
         });
     };
     $scope.edit = function(id) {
-        $scope.error = false;
-        $scope.success = false;
+        $scope.model.form.error = false;
+        $scope.model.form.success = false;
         exerciseService.get(id).then(function(data) {
-            $scope.exerciseData = data;
+           $scope.model.record = data;
+           console.log($scope.model.record);
         });
-        // var obj1 = _.find($scope.exercises, function(obj) {
-        //     return obj.id === id;
-        // });
-        // console.log(obj1);
-        // $scope.exerciseData = angular.copy(obj1);
-        // console.log($scope.exerciseData);
-        // console.log($scope.exerciseData === obj1);
+
     };
     $scope.clear = function() {
-        $scope.exerciseData = {};
-        $scope.error = false;
-        $scope.success = false;
-        $scope.submitted = false;
-        $scope.exercise_form.$setPristine();
-        // $scope.exercise_form.description.$setPristine();
+        $scope.model.form.error = false;
+        $scope.model.form.success = false;
+        $scope.model.form.submitted = false;
+        $scope.model.form.$setPristine();
+        $scope.model.record = {};
     };
+    $scope.model.table.search = function() {
+        $scope.model.table.currentPageData = $scope.model.table.totalPageData = $filter('filter')($scope.model.list, $scope.model.table.searchKeyword);
+    };
+    $scope.model.table.select = function() {
+        var end, start;
+        start = ($scope.model.table.currentPage - 1) * $scope.model.table.numPerPage;
+        end = start + $scope.model.table.numPerPage;
+        $scope.model.table.search();
+        $scope.model.table.sort($scope.model.table.currentSortedField);
+        $scope.model.table.slice(start,end);
+    };
+    $scope.model.table.sort = function(field) {
+        $scope.model.table.currentSortedField = field;
+        $scope.model.table.currentPageData = $filter('orderBy')($scope.model.table.currentPageData, field);
+    };
+    $scope.model.table.slice = function(start,end) {
+        $scope.model.table.currentPageData = $scope.model.table.currentPageData.slice(start,end);
+    };
+    init = function() {
+        exerciseService.getAll().then(function(data) {
+            $scope.model.list = data;
+            $scope.model.table.search();
+            $scope.model.table.currentSortedField = '+id';
+            $scope.model.table.sort($scope.model.table.currentSortedField);
+            $scope.model.table.numPerPage = $scope.model.table.maxNumPerPage[1];
+            $scope.model.table.slice(0,$scope.model.table.numPerPage);
+        });
+    };
+    $scope.model.table.onUpdate = function() {
+        $scope.model.table.search();
+        $scope.model.table.sort($scope.model.table.currentSortedField);
+        $scope.model.table.slice(0,$scope.model.table.numPerPage);
+        $scope.model.table.currentPage = 1;
+        console.log($scope.model.table.totalPageData)
+    };
+    $scope.model.table.onSort = function(field) {
+        $scope.model.table.search();
+        $scope.model.table.sort(field);
+        $scope.model.table.slice(0,$scope.model.table.numPerPage);
+        $scope.model.table.currentPage = 1;
+    }
+    return init();
   }]);

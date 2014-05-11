@@ -1,0 +1,106 @@
+.panel-toolbar:before {
+  -moz-border-bottom-colors: none;
+  -moz-border-left-colors: none;
+  -moz-border-right-colors: none;
+  -moz-border-top-colors: none;
+  border-color: #D9D9D9;
+  border-image: none;
+  border-style: solid;
+  border-width: 0 1px 0 0;
+  bottom: 3px;
+  content: "";
+  display: inline-block;
+  left: -1px;
+  position: absolute;
+  top: 3px;
+}
+.panel-toolbar {
+  display: inline-block;
+  float: right;
+  line-height: 20px;
+  padding: 0 0 0 10px;
+  position: relative;
+}
+.panel-toolbar > a[data-action], .panel-toolbar > .panel-menu > a[data-action] {
+  // transition: transform 0.1s ease 0s;
+}
+.panel-toolbar > a, .panel-toolbar > .panel-menu > a {
+  display: inline-block;
+  font-size: 14px;
+  line-height: 24px;
+  margin: 0 1px;
+  padding: 0;
+  color:#fff;
+}
+.panel-content {
+  padding:10px;
+}
+.cloak {
+  background: none repeat scroll 0 0 @brand-primary 0.1;
+  height: 100%;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 100000;
+}
+.cloak #loading{
+  margin:10% auto;
+  text-align: center;
+  height:100px;
+}
+.cloak li{
+  height:160px;
+  width:12px;
+  background:lighten(@brand-primary,40%);
+  display:inline-block;
+  animation:loader 1.3s infinite;
+  margin-right:20px;
+}
+.msg-box {
+  background: none repeat scroll 0 0 rgba(0, 0, 0, 0.6);
+  height: 100%;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 100000;
+  display: none;
+
+  .container {
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #FFFFFF;
+    padding: 20px;
+    position: relative;
+    top: 35%;
+    width: 100%;
+
+    .center {
+      left: 20%;
+      position: relative;
+      width: 60%;
+      .title {
+        font-size: 24px;
+        font-weight: 300;
+        letter-spacing: -1px;
+      }
+      .body {
+
+      }
+      .buttons button{
+        float: right;
+        font-size: 14px;
+        font-weight: 700;
+        margin-right: 7px;
+        padding-left: 15px;
+        padding-right: 15px;
+      }
+    }
+
+  }
+}
+.open > .dropdown-menu {
+  animation-duration: 0.4s;
+  animation-fill-mode: both;
+  animation-name: flipInX;
+}

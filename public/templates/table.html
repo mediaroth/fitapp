@@ -1,0 +1,70 @@
+<div class="page page-table" data-ng-controller="TableController">
+    <section class="panel panel-primary table-dynamic">
+        <div class="panel-heading">
+            <strong><span class="glyphicon glyphicon-th"></span> Bordered table</strong>
+            <div class="panel-toolbar">
+                <a data-action="collapse" ng-click="isCollapsed = !isCollapsed" href="#">
+                    <i class="fa {{ isCollapsed && 'fa-chevron-down' || 'fa-chevron-up' }}"></i>
+                </a>
+            </div>
+        </div>
+        <div class="panel-content clearfix " collapse="isCollapsed">
+            <div class="search-bar">
+                <span class="input-icon">
+                    <input type="text" class="form-control" ng-model="table.searchKeyword" ng-change="table.onUpdate()">
+                    <i class="fa fa-search"></i>
+                </span>
+                <span class="legend">Showing {{table.currentPageData.length}} of {{table.totalPageData.length}} items</span>
+            </div>
+            <table class="table table-bordered table-hover table-striped table-responsive">
+                <thead>
+                    <tr>
+                        <th><div class="th">
+                            Store Name
+                            <span class="up" ng-class="{active : table.currentSortedField == '-name'}" ng-click="table.onSort('-name')"><i class="fa fa-sort-asc"></i></span>
+                            <span class="down" ng-class="{active : table.currentSortedField == '+name'}" ng-click="table.onSort('+name')"><i class="fa fa-sort-desc"></i></span>
+                        </div></th>
+                        <th><div class="th">
+                            Price
+
+                        </div></th>
+                        <th><div class="th">
+                            Sales (in 30 days)
+               
+                        </div></th>
+                        <th><div class="th">
+                            Rating
+                            
+                        </div></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-ng-repeat="item in table.currentPageData | filter : search">
+                        <td>{{item.name}}</td>
+                        <td>{{item.price}}</td>
+                        <td>{{item.sales}}</td>
+                        <td>{{item.rating}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="bottom-bar clearfix">
+                <div class="num-per-page pull-left">
+                    Show <select name="" ng-change="table.onUpdate()" ng-options="num for num in table.maxNumPerPage" ng-model="table.numPerPage" id=""></select> items per page
+                </div>
+                <div class="text-right pagination-container pull-right">
+                    <pagination class="pagination-sm"
+                        ng-model="table.currentPage"
+                        total-items="table.totalPageData.length"
+                        items-per-page="table.numPerPage"
+                        max-size="4"
+                        ng-change="table.select(page)"
+                        rotate="false"
+                        boundary-links="true"></pagination>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    
+
+</div>

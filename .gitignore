@@ -9,3 +9,4 @@ Thumbs.db
 /app/config/database.php
 /assets
 /node_modules
+/public/bower_components

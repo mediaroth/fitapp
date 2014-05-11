@@ -1,5 +1,6 @@
 angular.module('fitApp.controllers').
-controller('UserController', ['$scope','$location','userService',function($scope,$location,userService) {
+controller('UserController', ['$scope','$location','userService','$http','$window',function($scope,$location,userService,$http, $window) {
+    console.log($window.sessionStorage);
     $scope.user = {};
     $scope.loading = false;
     $scope.submitted = false;
@@ -35,15 +36,13 @@ controller('UserController', ['$scope','$location','userService',function($scope
             // $scope.success = false;
             $scope.error = false;
             $scope.loading = true;
-            userService.postLogin($scope.user).then(function(data) {
-              console.log(data);
-                $scope.success = data.success;
-                // redirect to my profile
+            userService.postAuth($scope.user).
+            then(function(data) {
                 $location.path('/myprofile');
-            }, function(err) {
-              console.log(err);
-                $scope.error = err.data.error;
-                $scope.errors = err.data.errors;
+            },function(err) {
+                // there was an error authentifying the user
+                $scope.error = true;
+                $scope.errors = [err.data.error.message];
             });
         }
     };

@@ -1,5 +1,5 @@
 /*!
- * fitapp v0.0.1 ()
+ * fitapp v0.0.1 (https://github.com/mediaroth/fitapp)
  * Copyright 2011-2014 mediaroth
  * Licensed under BSD
  */
@@ -11,49 +11,126 @@ angular.module('fitApp.filters', []);
 // // inside of our controllers, so we'll inject
 // // those into our 'myApp.controllers' module
 angular.module('fitApp.controllers', ['fitApp.services']);
-var fitApp = angular.module('fitApp', ['ngRoute','ngCookies','restangular','fitApp.services','fitApp.controllers','fitApp.filters','fitApp.directives']).
+var fitApp = angular.module('fitApp', ['ngRoute','ngAnimate','ngCookies','ui.bootstrap','restangular','fitApp.services','fitApp.controllers','fitApp.filters','fitApp.directives']).
   constant('ACCESS_LEVELS', {
-    pub : 1,
-    user : 2
+    pub : 0,
+    user : 1
   }).
-  run(['$rootScope','$location','Auth',function($rootScope,$location,Auth) {
-    $rootScope.test = 'Hello from root';
-    $rootScope.$on('$routeChangeStart',
-      function(evt, next, curr) {
-        if(!Auth.isAuthorized(next.access_level)) {
-          if(Auth.isLoggedIn()) {
-            console.log('no permissions',next.access_level,Auth.isLoggedIn());
-            $location.path('/');
-          } else {
-            console.log('not authorized');
-            $location.path('/login');
-          }
-        }
-      }
-    );
-  }]).
+  // config(function($timeout) {
+  //   $timeout(function() { return 'text'}, 5000);
+  // }).
   config(['$routeProvider','$locationProvider','ACCESS_LEVELS', function($routeProvider, $locationProvider, ACCESS_LEVELS) {
     $locationProvider.html5Mode(true);
     $routeProvider.
       when('/', {
         templateUrl: '/templates/home.html',
         controller: 'HomeController',
-        access_level: ACCESS_LEVELS.pub
+        resolve: {
+          redirectTo : function($q, $location,userService,$timeout) {
+            var deferred = $q.defer();
+            userService.checkUser(ACCESS_LEVELS.user).then(function(authorized) {
+              if (authorized.data.error) {
+                console.log('in app - not authorized');
+                $location.path('/login');
+                deferred.resolve('yo');
+              } else {
+                console.log('in app - authorized');
+                deferred.resolve('yo');
+              }
+            }, function(err) {
+              console.log('in app - route /resolve - error');
+              // $location.path('/login');
+              deferred.reject('/login');
+            });
+            return deferred.promise;
+          }
+          // },
+          // delay: function($q, $defer) {
+          //   var delay = $q.defer();
+          //   $defer(delay.resolve, 1000);
+          //   return delay.promise;
+          // }
+        },
+      }).
+      when('/table', {
+        templateUrl: '/templates/table.html'
+      }).
+      when('/workout/option1', {
+        templateUrl: '/templates/table.html'
+      }).
+      when('/workout/option2', {
+        templateUrl: '/templates/table.html'
       }).
       when('/exercise', {
         templateUrl: '/templates/exercise.html',
         controller: 'ExerciseController',
-        access_level: ACCESS_LEVELS.pub
+        resolve: {
+          user : function($q, $location,userService) {
+            var deferred = $q.defer();
+            userService.checkUser(ACCESS_LEVELS.user).then(function(authorized) {
+              console.log(authorized);
+              if (!authorized) {
+                console.log('in app - not authorized');
+                $location.path('/login');
+                deferred.reject();
+              } else {
+                console.log('in app - authorized');
+                deferred.resolve();
+              }
+            }, function(err) {
+              $location.path('/login');
+              deferred.reject();
+            });
+            return deferred.promise;
+          }
+        },
+        access_level: ACCESS_LEVELS.user
       }).
       when('/workout', {
         templateUrl: '/templates/workout.html',
         controller: 'WorkoutController',
+        resolve: {
+          user : function($q, $location,userService) {
+            var deferred = $q.defer();
+            userService.checkUser(ACCESS_LEVELS.user).then(function(authorized) {
+              console.log(authorized);
+              if (!authorized) {
+                console.log('in app - not authorized');
+                $location.path('/login');
+                deferred.reject();
+              } else {
+                console.log('in app - authorized');
+                deferred.resolve();
+              }
+            }, function(err) {
+              $location.path('/login');
+              deferred.reject();
+            });
+            return deferred.promise;
+          }
+        },
         access_level: ACCESS_LEVELS.user
       }).
       when('/register', {
         templateUrl: '/templates/register.html',
         controller: 'UserController',
         access_level: ACCESS_LEVELS.pub
+      }).
+      when('/logout', {
+        resolve: {
+          user : function($q,$location,userService) {
+            var deferred = $q.defer();
+            userService.logout().
+            then(function() {
+              $location.path('/login');
+              deferred.resolve();
+            }, function(err) {
+              console.log('could not logout user !');
+              deferred.reject();
+            });
+            return deferred.promise;
+          }
+        }
       }).
       when('/myprofile', {
         templateUrl: '/templates/myprofile.html',
@@ -68,94 +145,120 @@ var fitApp = angular.module('fitApp', ['ngRoute','ngCookies','restangular','fitA
       otherwise({
         redirectTo: '/',
         templateUrl: '/templates/home.html',
+        resolve: {
+          user : function($q, $location,userService,$timeout) {
+            var deferred = $q.defer();
+            userService.checkUser(ACCESS_LEVELS.user).then(function(authorized) {
+              console.log(authorized);
+              if (!authorized) {
+                console.log('in app - not authorized');
+                $location.path('/login');
+                deferred.reject();
+              } else {
+                console.log('in app - authorized');
+                deferred.resolve();
+              }
+              return deferred.promise;
+            }, function(err) {
+              console.log('in app - route resolve - error');
+              $location.path('/login');
+              deferred.reject();
+              return deferred.promise;
+            });
+          }
+        }
       });
   }]).
-  config(['$httpProvider','$provide',function($httpProvider,$provide) {
-    // $provide.service('Auth',function(){});
-    var interceptor = function($q, $rootScope) {
-    var deferred = $q.defer();
+  factory('authInterceptor', function ($rootScope, $q, $window,$location) {
     return {
-      response : function(resp) {
-        if(resp.config.url == '/api/users/login') {
-          console.log(resp.data.token);
-          // Auth.setToken(resp.data.token);
+      request: function (config) {
+        config.headers = config.headers || {};
+        if ($window.sessionStorage.token) {
+          config.headers['X-AUTH-TOKEN'] = $window.sessionStorage.token;
         }
-        console.log(resp.config);
-        return resp;
+        return config;
       },
-      responseError: function(rejection) {
-        // Handle errors
-        switch(rejection.status) {
-          case 401:
-            if (rejection.config.url !== 'api/login') {
-              // If we're not on the login page
-              $rootScope.$broadcast('auth:loginRequired');
-            }
-            break;
-          case 403:
-            $rootScope.$broadcast('auth:forbidden');
-            break;
-          case 404:
-            $rootScope.$broadcast('page:notFound');
-            break;
-          case 500:
-            $rootScope.$broadcast('server:error');
-            break;
-        }
-        return $q.reject(rejection);
+      response: function (response) {
+        return response || $q.when(response);
       }
     };
+}).config(['$httpProvider',function($httpProvider) {
+    $httpProvider.interceptors.push('authInterceptor');
+}]).run(function($rootScope,$location,userService) {
+  $rootScope.$on('$routeChangeStart', function(e, curr, prev) {
+    if (curr.$$route && curr.$$route.resolve) {
+      // Show a loading message until promises are not resolved
+      $rootScope.loadingView = true;
+    }
+  });
+  $rootScope.$on('$routeChangeSuccess', function(e, curr, prev) {
+    // Hide loading message
+    $rootScope.loadingView = false;
+  });
+  $rootScope.isSpecificPage = function() {
+    var path;
+    path = $location.path();
+    return _.contains(['/404', '/500', '/login', '/register'], path);
   };
-  $httpProvider.interceptors.push(interceptor);
-}]);
+
+});
 
 
 angular.module('fitApp.controllers').
-controller('ExerciseController', ['$scope','exerciseService',function($scope,exerciseService) {
-    $scope.exerciseData = {};
-    $scope.exercises = [];
-    $scope.loading = false;
-    $scope.submitted = false;
-    $scope.errors = [];
-    $scope.success = false;
-
-    $scope.exercises = exerciseService.getAll().$object;
+controller('ExerciseController', ['$scope','exerciseService','$location','$filter',function($scope,exerciseService,$location,$filter) {
+    $scope.model = {};
+    $scope.model.loading = false;
+    $scope.model.form = {};
+    $scope.model.form.submitted = false;
+    $scope.model.form.errors = [];
+    $scope.model.form.success = false;
+    $scope.model.record = {};
+    $scope.model.list = [];
+    $scope.model.table = {};
+    $scope.model.table.maxNumPerPage = [3, 5, 10, 20];
+    $scope.model.table.currentSortedField = '';
+    $scope.model.table.searchKeyword = '';
+    $scope.model.table.currentPage = 1;
+    $scope.model.table.currentPageData = [];
+    $scope.model.table.totalPageData = [];
 
     $scope.submit = function() {
-        $scope.error = false;
-        $scope.success = false;
-        if (!$scope.exercise_form.$valid) {
-            $scope.submitted = true;
+        $scope.model.form.error = false;
+        $scope.model.form.success = false;
+        if (!$scope.model.form.$valid) {
+            $scope.model.form.submitted = true;
         } else {
-            $scope.submitted = false;
-            // $scope.success = false;
-            $scope.error = false;
-            $scope.loading = true;
+            $scope.model.form.submitted = false;
+            // $scope.model.form.success = false;
+            $scope.model.form.error = false;
+            $scope.model.form.loading = true;
             //PUT
-            if ($scope.exerciseData.id) {
-                exerciseService.put($scope.exerciseData).then(function(data) {
-                    $scope.success = data.success;
+            if (!_.isUndefined($scope.model.record.id)) {
+                exerciseService.put($scope.model.record).then(function(data) {
+                    $scope.model.form.success = data.success;
                     return exerciseService.getAll();
                }).then(function(data) {
-                    $scope.exercises = data;
-                    $scope.loading = false;
+                    $scope.model.list = data;
+                    $scope.model.loading = false;
+                    $scope.model.table.onUpdate();
                 }, function(err) {
                     console.log(err);
                 });
             } else { // CREATE
-                exerciseService.post($scope.exerciseData).then(function(data) {
-                    console.log(data);
-                    $scope.success = data.success;
+                exerciseService.post($scope.model.record).then(function(data) {
+                    $scope.model.form.success = data.success;
+                                        console.log($scope.model.form.success);
                     return exerciseService.getAll();
                 }, function(err) {
-                    $scope.error = err.data.error;
-                    $scope.errors = err.data.errors;
+                    $scope.model.form.error = err.data.error;
+                    $scope.model.form.errors = err.data.errors;
                     return exerciseService.getAll();
                 }).finally(function() {
                     // how to implement ?
                 }).then(function(data) {
-                    $scope.exercises = data;
-                    $scope.loading = false;
+                    $scope.model.list = data;
+                    $scope.model.loading = false;
+                    $scope.model.table.onUpdate();
                 }, function(err) {
                     console.log(err);
                 });
@@ -164,50 +267,265 @@ controller('ExerciseController', ['$scope','exerciseService',function($scope,exe
 
     };
     $scope.destroy = function(id) {
-        $scope.loading = true;
+        $scope.model.loading = true;
         exerciseService.destroy(id).then(function() {
-            console.log('deleted ' + id);
             return exerciseService.getAll();
         },function(err) {
             console.log(err);
         }).then(function(data) {
             console.log('updated list');
-            $scope.exercises = data;
-            $scope.loading = false;
+            $scope.model.list = data;
+            $scope.model.loading = false;
+            $scope.model.table.onUpdate();
         });
     };
     $scope.edit = function(id) {
-        $scope.error = false;
-        $scope.success = false;
+        $scope.model.form.error = false;
+        $scope.model.form.success = false;
         exerciseService.get(id).then(function(data) {
-            $scope.exerciseData = data;
+           $scope.model.record = data;
+           console.log($scope.model.record);
         });
-        // var obj1 = _.find($scope.exercises, function(obj) {
-        //     return obj.id === id;
-        // });
-        // console.log(obj1);
-        // $scope.exerciseData = angular.copy(obj1);
-        // console.log($scope.exerciseData);
-        // console.log($scope.exerciseData === obj1);
+
     };
     $scope.clear = function() {
-        $scope.exerciseData = {};
-        $scope.error = false;
-        $scope.success = false;
-        $scope.submitted = false;
-        $scope.exercise_form.$setPristine();
-        // $scope.exercise_form.description.$setPristine();
+        $scope.model.form.error = false;
+        $scope.model.form.success = false;
+        $scope.model.form.submitted = false;
+        $scope.model.form.$setPristine();
+        $scope.model.record = {};
     };
+    $scope.model.table.search = function() {
+        $scope.model.table.currentPageData = $scope.model.table.totalPageData = $filter('filter')($scope.model.list, $scope.model.table.searchKeyword);
+    };
+    $scope.model.table.select = function() {
+        var end, start;
+        start = ($scope.model.table.currentPage - 1) * $scope.model.table.numPerPage;
+        end = start + $scope.model.table.numPerPage;
+        $scope.model.table.search();
+        $scope.model.table.sort($scope.model.table.currentSortedField);
+        $scope.model.table.slice(start,end);
+    };
+    $scope.model.table.sort = function(field) {
+        $scope.model.table.currentSortedField = field;
+        $scope.model.table.currentPageData = $filter('orderBy')($scope.model.table.currentPageData, field);
+    };
+    $scope.model.table.slice = function(start,end) {
+        $scope.model.table.currentPageData = $scope.model.table.currentPageData.slice(start,end);
+    };
+    init = function() {
+        exerciseService.getAll().then(function(data) {
+            $scope.model.list = data;
+            $scope.model.table.search();
+            $scope.model.table.currentSortedField = '+id';
+            $scope.model.table.sort($scope.model.table.currentSortedField);
+            $scope.model.table.numPerPage = $scope.model.table.maxNumPerPage[1];
+            $scope.model.table.slice(0,$scope.model.table.numPerPage);
+        });
+    };
+    $scope.model.table.onUpdate = function() {
+        $scope.model.table.search();
+        $scope.model.table.sort($scope.model.table.currentSortedField);
+        $scope.model.table.slice(0,$scope.model.table.numPerPage);
+        $scope.model.table.currentPage = 1;
+        console.log($scope.model.table.totalPageData)
+    };
+    $scope.model.table.onSort = function(field) {
+        $scope.model.table.search();
+        $scope.model.table.sort(field);
+        $scope.model.table.slice(0,$scope.model.table.numPerPage);
+        $scope.model.table.currentPage = 1;
+    }
+    return init();
   }]);
 
 angular.module('fitApp.controllers').
-controller('HomeController', function($scope,Auth) {
-  $scope.user = Auth.getUser();
+controller('HomeController', function($scope) {
   $scope.test = 'Hello World, I\'m so cool ! Maybe even more so !! Oh Yeaahhhh, so jelly right now'
 });
 
 angular.module('fitApp.controllers').
-controller('UserController', ['$scope','$location','userService',function($scope,$location,userService) {
+controller('TableController', ['$rootScope','$scope','$filter',function($rootScope,$scope,$filter) {
+    $scope.table = {};
+    $scope.table.data = [
+        {
+          name: 'Nijiya Market',
+          price: '$$',
+          sales: 292,
+          rating: 4.0
+        }, {
+          name: 'Eat On Monday Truck',
+          price: '$',
+          sales: 119,
+          rating: 4.3
+        }, {
+          name: 'Tea Era',
+          price: '$',
+          sales: 874,
+          rating: 4.0
+        }, {
+          name: 'Rogers Deli',
+          price: '$',
+          sales: 347,
+          rating: 4.2
+        }, {
+          name: 'MoBowl',
+          price: '$$$',
+          sales: 24,
+          rating: 4.6
+        }, {
+          name: 'The Milk Pail Market',
+          price: '$',
+          sales: 543,
+          rating: 4.5
+        }, {
+          name: 'Nob Hill Foods',
+          price: '$$',
+          sales: 874,
+          rating: 4.0
+        }, {
+          name: 'Scratch',
+          price: '$$$',
+          sales: 643,
+          rating: 3.6
+        }, {
+          name: 'Gochi Japanese Fusion Tapas',
+          price: '$$$',
+          sales: 56,
+          rating: 4.1
+        }, {
+          name: 'Cost Plus World Market',
+          price: '$$',
+          sales: 79,
+          rating: 4.0
+        }, {
+          name: 'Bumble Bee Health Foods',
+          price: '$$',
+          sales: 43,
+          rating: 4.3
+        }, {
+          name: 'Costco',
+          price: '$$',
+          sales: 219,
+          rating: 3.6
+        }, {
+          name: 'Red Rock Coffee Co',
+          price: '$',
+          sales: 765,
+          rating: 4.1
+        }, {
+          name: '99 Ranch Market',
+          price: '$',
+          sales: 181,
+          rating: 3.4
+        }, {
+          name: 'Mi Pueblo Food Center',
+          price: '$',
+          sales: 78,
+          rating: 4.0
+        }, {
+          name: 'Cucina Vention',
+          price: '$$',
+          sales: 163,
+          rating: 3.3
+        }, {
+          name: 'Sufi Coffee Shop',
+          price: '$',
+          sales: 113,
+          rating: 3.3
+        }, {
+          name: 'Dana Street Roasting',
+          price: '$',
+          sales: 316,
+          rating: 4.1
+        }, {
+          name: 'Pearl Cafe',
+          price: '$',
+          sales: 173,
+          rating: 3.4
+        }, {
+          name: 'Posh Bagel',
+          price: '$',
+          sales: 140,
+          rating: 4.0
+        }, {
+          name: 'Artisan Wine Depot',
+          price: '$$',
+          sales: 26,
+          rating: 4.1
+        }, {
+          name: 'Hong Kong Chinese Bakery',
+          price: '$',
+          sales: 182,
+          rating: 3.4
+        }, {
+          name: 'Starbucks',
+          price: '$$',
+          sales: 97,
+          rating: 3.7
+        }, {
+          name: 'Tapioca Express',
+          price: '$',
+          sales: 301,
+          rating: 3.0
+        }, {
+          name: 'House of Bagels',
+          price: '$',
+          sales: 82,
+          rating: 4.4
+        }
+      ];
+    $scope.table.maxNumPerPage = [3, 5, 10, 20];
+    $scope.table.currentSortedField = '';
+    $scope.table.searchKeyword = '';
+    $scope.table.currentPage = 1;
+    $scope.table.currentPageData = [];
+    $scope.table.totalPageData = [];
+
+    $scope.table.search = function() {
+        $scope.table.currentPageData = $scope.table.totalPageData = $filter('filter')($scope.table.data, $scope.table.searchKeyword);
+    };
+    $scope.table.select = function() {
+        var end, start;
+        start = ($scope.table.currentPage - 1) * $scope.table.numPerPage;
+        end = start + $scope.table.numPerPage;
+        $scope.table.search();
+        $scope.table.sort($scope.table.currentSortedField);
+        $scope.table.slice(start,end);
+    };
+    $scope.table.sort = function(field) {
+        $scope.table.currentSortedField = field;
+        $scope.table.currentPageData = $filter('orderBy')($scope.table.currentPageData, field);
+    };
+    $scope.table.slice = function(start,end) {
+        $scope.table.currentPageData = $scope.table.currentPageData.slice(start,end);
+    };
+    init = function() {
+        $scope.table.search();
+        $scope.table.currentSortedField = '+name';
+        $scope.table.sort($scope.table.currentSortedField);
+        $scope.table.numPerPage = $scope.table.maxNumPerPage[1];
+        $scope.table.slice(0,$scope.table.numPerPage);
+    };
+    $scope.table.onUpdate = function() {
+        $scope.table.search();
+        $scope.table.sort($scope.table.currentSortedField);
+        $scope.table.slice(0,$scope.table.numPerPage);
+        $scope.table.currentPage = 1;
+        console.log($scope.table.totalPageData)
+    };
+    $scope.table.onSort = function(field) {
+        $scope.table.search();
+        $scope.table.sort(field);
+        $scope.table.slice(0,$scope.table.numPerPage);
+        $scope.table.currentPage = 1;
+    }
+    return init();
+}]);
+
+angular.module('fitApp.controllers').
+controller('UserController', ['$scope','$location','userService','$http','$window',function($scope,$location,userService,$http, $window) {
+    console.log($window.sessionStorage);
     $scope.user = {};
     $scope.loading = false;
     $scope.submitted = false;
@@ -243,15 +561,13 @@ controller('UserController', ['$scope','$location','userService',function($scope
             // $scope.success = false;
             $scope.error = false;
             $scope.loading = true;
-            userService.postLogin($scope.user).then(function(data) {
-              console.log(data);
-                $scope.success = data.success;
-                // redirect to my profile
+            userService.postAuth($scope.user).
+            then(function(data) {
                 $location.path('/myprofile');
-            }, function(err) {
-              console.log(err);
-                $scope.error = err.data.error;
-                $scope.errors = err.data.errors;
+            },function(err) {
+                // there was an error authentifying the user
+                $scope.error = true;
+                $scope.errors = [err.data.error.message];
             });
         }
     };
@@ -352,6 +668,38 @@ controller('WorkoutController', ['$scope','$http','workoutService',function($sco
   }]);
 
 angular.module('fitApp.directives', []).
+directive('mrSetFocus', function() {
+  return {
+    restrict: 'A',
+    controller: ['$scope', '$element', '$attrs', '$location', function($scope, $element, $attrs, $location) {
+      // element is li
+      // set active class if li pointing route === current route
+      var navRoutes,elePath;
+      navRoutes = $element.find('a');
+      currentPath = function() {
+        return $location.path();
+      };
+      setFocus = function(currentPath) {
+        navRoutes.each(function() {
+          var $ele = $(this);
+          var elePath = $ele.attr('href');
+          if (elePath === currentPath) {
+            $ele.parent('li').addClass('active');
+          } else {
+            $ele.parent('li').removeClass('active');
+          }
+        })
+      };
+      setFocus(currentPath());
+      return $scope.$watch(currentPath, function(newVal, oldVal) {
+        if (newVal === oldVal) {
+          return;
+        }
+        setFocus(newVal);
+      });
+    }]
+  }
+}).
 directive('tableList', function() {
     return {
       restrict: 'A',
@@ -365,7 +713,7 @@ directive('tableList', function() {
         someProp : '@'
       },
       controller: function($scope, $element, $transclude) {
-        console.log($scope.objects);
+        // console.log($scope.objects);
       }
     };
 }).
@@ -386,82 +734,182 @@ directive('ngFocus', [function() {
     }
   };
 }]).
-  directive('myDirective', function() {
+directive('mrToggleMinNav', ['$rootScope', function($rootScope) {
     return {
-      // restrict: 'A',
-      // replace: true,
-      require: '?ngModel',
-      template: '<div class="sidebox">\
-                    <div class="content">\
-                      <h2 class="header">{{ workoutData.name }}</h2>\
-                      <span class="content">\
-                      {{ workoutData.description }}</span>\
-                    </div>\
-                  </div>',
-      // scope: true,
-      // scope : {
-      //   title : '@'
-      // },
-      link: function(scope,ele,attrs,ngModel) {
-        if(!ngModel) {
-          console.log('no ngModel');
-        } else {
-          $(function() {
-            $('#foo').on('blur',function(e) {
-              scope.$apply(function() {
-                ngModel.$setViewValue($('#foo').val());
-              });
-            });
+      restrict: 'A',
+      link: function(scope,ele,attrs) {
+        var app;
+        app = $('#app');
+        ele.on('click', function(e) {
+          if (app.hasClass('nav-min')) {
+              app.removeClass('nav-min');
+          } else {
+            app.addClass('nav-min');
+            $rootScope.$broadcast('minNav:enabled');
+          }
+          return e.preventDefault();
+        });
+      }
+    };
+}]).directive('mrCollapseNav', [
+    function() {
+      return {
+        restrict: 'A',
+        link: function(scope, ele, attrs) {
+          var $a, $aRest, $lists, $listsRest, app, duration;
+          duration = 200;
+          $lists = ele.find('ul').parent('li');
+          $lists.append('<i class="fa fa-caret-right icon-has-ul"></i>');
+          $a = $lists.children('a');
+          // the ones without subnavs
+          $listsRest = ele.children('li').not($lists);
+          $aRest = $listsRest.children('a');
+          app = $('#app');
+          $a.on('click',function(event) {
+            var $this, $parent;
+            if (app.hasClass('nav-min')) {
+              return false;
+            }
+            $this = $(this);
+            $parent = $this.parent('li');
+            // close all other panels
+            $lists.not($parent).removeClass('open').find('ul').slideUp(duration);
+            $parent.toggleClass('open').find('ul').slideToggle(duration);
+            return event.preventDefault();
           });
-          console.log(ngModel.$viewChangeListeners);
+          $aRest.on('click', function(event) {
+            return $lists.removeClass('open').find('ul').slideUp(duration);
+          });
+          return scope.$on('minNav:enabled', function(event) {
+            return $lists.removeClass('open').find('ul').slideUp();
+          });
         }
+      };
+    }
+]).directive('mrCustomBackground', function() {
+    return {
+      restrict: 'A',
+      controller: [
+        '$scope', '$element', '$location', function($scope, $element, $location) {
+          var addBg, path;
+          path = function() {
+            return $location.path();
+          };
+          addBg = function(path) {
+            $element.removeClass('body-home body-special body-tasks body-lock');
+            switch (path) {
+              case '/':
+                return $element.addClass('body-home');
+              case '/404':
+              case '/pages/500':
+              case '/login':
+              case '/register':
+                return $element.addClass('body-special');
+              case '/pages/lock-screen':
+                return $element.addClass('body-special body-lock');
+              case '/tasks':
+                return $element.addClass('body-tasks');
+            }
+          };
+          addBg($location.path());
+          return $scope.$watch(path, function(newVal, oldVal) {
+            if (newVal === oldVal) {
+              return;
+            }
+            return addBg($location.path());
+          });
+        }
+      ]
+    };
+}).directive('mrMsgBox', function() {
+    return {
+      restrict: 'A',
+      scope : {
+        body : '@',
+        title : '@',
+        onConfirm : '&confirm'
+      },
+      link: function(scope, ele, attrs)  {
+        // console.log( scope.onConfirm);
+        ele.on('click', function(e) {
+                  var id = 15;
+          var $msgbox = $('.msg-box');
+          $('.msg-box .title').html(scope.title);
+          $('.msg-box .body').html(scope.body);
+          $('.msg-box .cancel').unbind().on('click', function(e) {
+            $msgbox.fadeOut(200);
+          })
+          $('.msg-box .ok').unbind().on('click', function() {
+            scope.onConfirm();
+            $msgbox.fadeOut(200);
+          });
+          $msgbox.fadeIn(200);
+        });
       }
     };
 });
 
 angular.module('fitApp.services').
-factory('Auth',function($cookieStore, ACCESS_LEVELS) {
-  var _user = $cookieStore.get('user');
-  var setUser = function(user) {
-    if (!user.role || user.role < 0) {
-      user.role = ACCESS_LEVELS.pub;
-    }
-    _user = user;
-    $cookieStore.put('user', _user);
-
+provider('auth', function() {
+  // var _user;
+  var _user = {};
+  this.setToken = function(token) {
+    console.log('in setToken');
+    _user.token = token;
+    console.log(_user);
   };
-  return {
-    isAuthorized: function(lvl) {
-      if(!_user) {
-        if(lvl === 1) {
-          return true;
-        } else {
+  this.setUser = function(user) {
+    console.log('setUser');
+    _user = user
+  };
+  // return {
+  //   // setToken: function(token) {
+  //   //   console.log('in setToken');
+  //   //   this._user.token = token;
+  //   //   console.log(_user);
+  //   // },
+  //   setUser : function(user) {
+  //     console.log('in setUser');
+  //       if (!user.role || user.role < 0) {
+  //         user.role = ACCESS_LEVELS.pub;
+  //       }
+  //       _user = user;
+  //       console.log(_user);
+  //       // $cookieStore.put('user', _user);
+  //   },
+    this.$get = function(userService) {
+      // var _user = $cookieStore.get('user');
+      return {
+        // user : _user
+        // // setToken: function(token) {
+        // //   _user.token = token;
+        // // },
+        // // setToken : setToken,
+        isAuthorized: function(lvl) {
+          // no user logged in, assign role of public = 1
           return false;
-        }
-      }
-      return _user.role >= lvl;
-    },
-    setUser: setUser,
-    isLoggedIn: function() {
-      return _user ? true : false;
-    },
-    getUser: function() {
-      return _user;
-    },
-    getId: function() {
-      return _user ? _user._id : null;
-    },
-    getToken: function() {
-      return _user ? _user.token : '';
-    },
-    setToken: function(token) {
-      _user.token = token;
-    },
-    logout: function() {
-      $cookieStore.remove('user');
-      _user = null;
-    }
-  };
+        },
+        // // setUser: setUser,
+        // isLoggedIn: function() {
+        //   return _user ? true : false;
+        // },
+        getUser: function() {
+          console.log('in get user');
+          return _user;
+        },
+        // getId: function() {
+        //   return _user ? _user._id : null;
+        // },
+        getToken: function() {
+          return _user;
+        },
+        // logout: function() {
+        //   // $cookieStore.remove('user');
+        //   _user = null;
+        // }
+      };
+    // }
+  }
 });
 
 angular.module('fitApp.services').
@@ -490,11 +938,12 @@ factory('exerciseService', function(Restangular) {
 });
 
 angular.module('fitApp.services').
-factory('userService', function(Restangular) {
+factory('userService', function($rootScope,$window,$location,$q,$http,Restangular) {
   var restAngular = Restangular.withConfig(function(Configurer) {
     Configurer.setBaseUrl('/api');
   });
   var _userService = restAngular.all('users');
+  var user = {};
   return {
     getAll: function() {
       return _userService.getList();
@@ -502,11 +951,75 @@ factory('userService', function(Restangular) {
     get: function(id) {
       return restAngular.one('users',id).get();
     },
+    getUser: function(id) {
+      if (!user) {
+        console.log('http');
+        $http
+        .get('/auth')
+        .success(function(data,status,headers,config) {
+            $window.sessionStorage.token = data.token;
+            // user = data.user;
+            console.log('http');
+            user = data.user;
+            return data.user;
+        })
+        .error(function(data,status,headers,config) {
+            delete $window.sessionStorage.token;
+            console.log('error');
+        });
+      }
+      return user;
+    },
+    checkUser: function(lvl) {
+        return $http
+        .get('/auth')
+        .success(function(data,status,headers,config) {
+          if (data.error) {
+            $q.reject(data);
+          } else {
+            user = data;
+            $rootScope.authorized = true;
+            if (lvl <= user.role) {
+             } else {
+              $q.reject(data);
+            }
+          }
+        })
+        .error(function(data,status,headers,config) {
+          console.log('in checkUser error');
+          delete $window.sessionStorage.token;
+          $location.path('/login');
+          $q.reject(data);
+        });
+    },
     post: function(data) {
       return _userService.post(data);
     },
     postLogin: function(data) {
       return _userService.customPOST(data,'login');
+    },
+    postAuth: function(data) {
+      return $http
+        .post('/auth',data)
+        .success(function(data,status,headers,config) {
+            $window.sessionStorage.token = data.token;
+            $rootScope.authorized = true;
+            user = data.user;
+            return true;
+        })
+        .error(function(data,status,headers,config) {
+          console.log(data);
+            delete $window.sessionStorage.token;
+            $q.reject();
+        });
+    },
+    logout: function() {
+        var deferred = $q.defer();
+        delete $window.sessionStorage.token;
+        $rootScope.authorized = false;
+        user = {};
+        deferred.resolve();
+        return deferred.promise;
     },
     put: function(ele) {
       return ele.put();
@@ -542,7 +1055,3 @@ factory('workoutService', function(Restangular) {
   };
 });
 
-
-var test = 'Test';
-
-var fuc = 'foo';

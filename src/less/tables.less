@@ -1,0 +1,49 @@
+table {
+  thead tr th {
+      &:nth-child(1) {
+          width:10%;
+      }
+      &:nth-child(2) {
+          width:30%;
+      }
+      &:nth-child(3) {
+          width:30%;
+      }
+      &:nth-child(4) {
+          width:30%;
+      }
+
+      > div {
+      position: relative;
+      span {
+        display: inline-block;
+        height:5px;
+        position: absolute;
+        cursor: pointer;
+        vertical-align: top;
+        color: lighten(#000, 85%);;
+        &:hover,
+        &.active {
+            color: @brand-primary;
+          }
+        &.up {
+          right:2px;
+          bottom:7px;
+        }
+        &.down {
+          top:-4px;
+          right:2px;
+        }
+      }
+    }
+  }
+}
+
+// .fullscreen-mode {
+//   height: 100%;
+//   left: 0;
+//   position: fixed;
+//   top: 0;
+//   width: 100%;
+//   z-index: 99999;
+// }
